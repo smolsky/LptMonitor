@@ -16,21 +16,22 @@ namespace InpOut32.Net
     {
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
-      //Application.Run(new CSharpExample());
-      var cfg = Config.Load();
-      cfg.Save();
-      var log = new Logger() { FilePath = cfg.LogName };
+      Application.Run(new CSharpExample());
 
-      uint val = 0;
+      //var cfg = Config.Load();
+      //cfg.Save();
+      //var log = new Logger() { FilePath = cfg.LogName };
 
-      while (true)
-      {
-        var newval = CSharpExample.DlPortReadPortUlong(cfg.Port);
-        if ( newval != val)
-          log.Output(cfg.Port, newval);
-        val = newval;
-        Thread.Sleep(cfg.TimeoutInMilliseconds);
-      }
+      //uint val = 0;
+
+      //while (true)
+      //{
+      //  var newval = CSharpExample.DlPortReadPortUlong(cfg.Port);
+      //  if ( newval != val)
+      //    log.Output(cfg.Port, newval);
+      //  val = newval;
+      //  Thread.Sleep(cfg.TimeoutInMilliseconds);
+      //}
     }
   }
 }

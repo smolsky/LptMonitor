@@ -7,6 +7,9 @@ using System.Text;
 using System.Windows.Forms;
 
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Reflection;
+using InpOut32.CSharp.Net;
 
 namespace InpOut32.Net
 {
@@ -61,6 +64,47 @@ namespace InpOut32.Net
 
         bool m_bX64 = false;
 
+        //Monitor monitor;
+        NotifyIcon notifyIcon;
+        ToolStripMenuItem exitApplication;
+        ContextMenuStrip contextMenu;
+        public void FolderMonitorApplicationContext()
+        {
+          //this.monitor = new Monitor();
+
+          notifyIcon = new NotifyIcon();
+          //using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(
+          //    "<project namespace>.<folder path>" + "filename.ico"))
+          //{
+          //  notifyIcon.Icon = InpOut32.CSharp.Net.Properties.Resources.NotifyIcon
+          //}
+
+          notifyIcon.Icon = InpOut32.CSharp.Net.Properties.Resources.NotifyIcon;
+          notifyIcon.Text = "LPT Monitor";
+          notifyIcon.Visible = true;
+
+          contextMenu = new ContextMenuStrip();
+          exitApplication = new ToolStripMenuItem();
+
+          notifyIcon.ContextMenuStrip = contextMenu;
+
+          //notifyIcon.DoubleClick += notifyIcon_DoubleClick;                      
+
+          exitApplication.Text = "Exit..";
+          exitApplication.Click += exitApplication_Click;
+          contextMenu.Items.Add(exitApplication);
+        }
+
+        void exitApplication_Click(object sender, EventArgs e)
+        {
+          Close();
+        }
+
+        //void notifyIcon_DoubleClick(object sender, EventArgs e)
+        //{
+        //  throw new NotImplementedException();
+        //}
+
         public CSharpExample()
         {
             InitializeComponent();
@@ -103,6 +147,9 @@ namespace InpOut32.Net
                 button6.Enabled = false;
                 button7.Enabled = false;
             }
+
+            FolderMonitorApplicationContext();
+            Init();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -269,6 +316,32 @@ namespace InpOut32.Net
         {
             System.Threading.Thread t = new System.Threading.Thread(new System.Threading.ThreadStart(ThreadBeeper));
             t.Start();
+        }
+
+        private void HideTimer_Tick(object sender, EventArgs e)
+        {
+          if (Visible)
+            Visible = false;
+        }
+
+        Config cfg;
+        Logger log;
+        uint val = 0;
+        void Init()
+        {
+          cfg = Config.Load();
+          cfg.Save();
+          log = new Logger() { FilePath = cfg.LogName };
+          _LptReadTimer.Interval = cfg.TimeoutInMilliseconds;
+          _LptReadTimer.Start();
+        }
+        private void _LptReadTimer_Tick(object sender, EventArgs e)
+        {
+          var newval = CSharpExample.DlPortReadPortUlong(cfg.Port);
+          //uint newval = 0;
+          if (newval != val)
+            log.Output(cfg.Port, newval);
+          val = newval;
         }
     }
 }
